@@ -2,9 +2,9 @@ import numpy as np
 from typing import Dict, Any
 
 def calculate_indices(data: Dict[str, Any]) -> Dict[str, np.ndarray]:
-    \"\"\"
+    """
     Calculates agricultural indices from Sentinel-2 bands.
-    \"\"\"
+    """
     b04 = data["B04"] # Red
     b08 = data["B08"] # NIR
     b11 = data["B11"] # SWIR

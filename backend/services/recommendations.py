@@ -1,9 +1,9 @@
 from typing import List, Dict, Any
 
 def generate_insights(regions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    \"\"\"
+    """
     Generates AI recommendations based on the analyzed regions.
-    \"\"\"
+    """
     insights = []
     
     # Look for water stress (low NDVI, high NDWI or vice versa depending on crop)
@@ -63,9 +63,9 @@ def generate_insights(regions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return insights
 
 def generate_alerts(regions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    \"\"\"
+    """
     Generates real-time alerts.
-    \"\"\"
+    """
     alerts = []
     
     very_low = [r for r in regions if r["ndvi"] > 0.2 and r["ndwi"] < -0.1]

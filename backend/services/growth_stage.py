@@ -1,7 +1,7 @@
 import numpy as np
 
 def detect_growth_stage(ndvi: np.ndarray, crop_class: np.ndarray) -> np.ndarray:
-    \"\"\"
+    """
     Detects the growth stage based on NDVI values.
     Returns an array of integers:
     0: Not planted / Bare soil (NDVI < 0.15)
@@ -9,7 +9,7 @@ def detect_growth_stage(ndvi: np.ndarray, crop_class: np.ndarray) -> np.ndarray:
     2: Vegetative Growth (0.35 <= NDVI < 0.55)
     3: Reproductive / Maturing (0.55 <= NDVI < 0.75)
     4: Maturity / Ready to Harvest (NDVI >= 0.75)
-    \"\"\"
+    """
     stages = np.zeros_like(ndvi, dtype=np.uint8)
     
     # We only care about areas that are actually crops (crop_class > 0)

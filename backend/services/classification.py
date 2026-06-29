@@ -2,7 +2,7 @@ import numpy as np
 from typing import Dict, Any
 
 def classify_crops(agri_mask: np.ndarray, ndvi: np.ndarray, ndwi: np.ndarray) -> np.ndarray:
-    \"\"\"
+    """
     Classifies agricultural pixels into crop types.
     Returns an array of integers representing classes:
     0: Non-Agri
@@ -10,7 +10,7 @@ def classify_crops(agri_mask: np.ndarray, ndvi: np.ndarray, ndwi: np.ndarray) ->
     2: Wheat
     3: Corn
     4: Other
-    \"\"\"
+    """
     # Initialize output with 0 (Non-Agri)
     crop_class = np.zeros_like(agri_mask, dtype=np.uint8)
     
