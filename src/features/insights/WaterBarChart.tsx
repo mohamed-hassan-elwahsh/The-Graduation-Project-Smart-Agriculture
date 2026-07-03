@@ -5,6 +5,13 @@ import type { WaterPoint } from '@/core/types';
 
 const TT = { contentStyle: { background: C.card, border: `1px solid ${C.border}`, borderRadius: 6, fontSize: 11 } };
 
+function formatTooltipValue(value: number | string | readonly (number | string)[] | undefined) {
+    if (Array.isArray(value)) {
+        return value.map(v => (typeof v === 'number' ? v.toFixed(2) : v ?? '–')).join(', ');
+    }
+    return typeof value === 'number' ? value.toFixed(2) : value ?? '–';
+}
+
 export default function WaterBarChart({ data, title }: { data: WaterPoint[]; title: string }) {
     return (
         <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 8, padding: 12 }}>
@@ -15,10 +22,7 @@ export default function WaterBarChart({ data, title }: { data: WaterPoint[]; tit
                         <CartesianGrid strokeDasharray="3 3" stroke={C.border} vertical={false} />
                         <XAxis dataKey="y" tick={{ fontSize: 10, fill: C.muted }} axisLine={false} tickLine={false} />
                         <YAxis domain={[1.4, 2.1]} tick={{ fontSize: 10, fill: C.muted }} axisLine={false} tickLine={false} />
-                        <Tooltip {...TT} formatter={(value: any) => [
-                            typeof value === 'number' ? value.toFixed(2) : value,
-                            'M m³'
-                        ]} />
+                        <Tooltip {...TT} formatter={(value) => [formatTooltipValue(value), 'M m³']} />
                         <Bar dataKey="w" fill={C.sky} radius={[3, 3, 0, 0]} maxBarSize={24} />
                     </BarChart>
                 </ResponsiveContainer>

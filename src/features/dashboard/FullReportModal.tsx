@@ -11,7 +11,7 @@ interface Props {
     field: Field | null;
 }
 
-export default function FullReportModal({ open, onClose, t, lang, data, field }: Props) {
+export default function FullReportModal({ open, onClose, lang, data, field }: Props) {
     if (!open) return null;
 
     return (
