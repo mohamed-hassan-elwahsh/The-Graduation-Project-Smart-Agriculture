@@ -4,7 +4,7 @@ class Settings(BaseSettings):
     sh_client_id: str = ""
     sh_client_secret: str = ""
     
-    port: int = 3000
+    port: int = 8000
     host: str = "0.0.0.0"
     debug: bool = True
     
