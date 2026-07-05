@@ -1,8 +1,8 @@
 'use client';
-import { useState, useCallback } from 'react';
-import type { Lang } from '@/core/types';
+import { useState } from 'react';
+import { TR } from '@/core/constants/translations';
 import { useAnalysis } from '@/core/hooks/useAnalysis';
-import type { Translation } from '@/core/constants/translations';
+import type { Lang } from '@/core/types';
 import SearchView from '@/features/search/SearchView';
 import AnalyzingView from '@/shared/ui/AnalyzingView';
 import DashboardView from '@/features/dashboard/DashboardView';
