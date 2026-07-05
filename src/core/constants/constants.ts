@@ -29,8 +29,8 @@ export const TYPE_COLORS: Record<string, string> = {
 export const STAT_COLORS = ['#0ea5e9', '#f59e0b', '#0ea5e9', '#10b981', '#8b5cf6'];
 
 export const LAYERS = [
-  { id: 'agri',  c: '#10b981' },
-  { id: 'crop',  c: '#f59e0b' },
-  { id: 'veg',   c: '#0ea5e9' },
-  { id: 'water', c: '#3b82f6' },
+  { id: 'image' as const,          c: '#0ea5e9' },
+  { id: 'segmentation' as const,   c: '#10b981' },
+  { id: 'classification' as const, c: '#f59e0b' },
+  { id: 'ndvi' as const,           c: '#8b5cf6' },
 ] as const;

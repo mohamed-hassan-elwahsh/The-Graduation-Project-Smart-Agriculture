@@ -10,61 +10,52 @@ export default function FieldInspector({ t, lang, field, onViewFullReport }: Pro
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.sky} strokeWidth="2">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                 </svg>
-                <span style={{ fontWeight: 600, fontSize: 12, color: '#c5ddf0' }}>{t.inspTitle}</span>
+                <span style={{ fontWeight: 700, fontSize: 12, color: C.text }}>{t.inspTitle}</span>
             </div>
 
             {!field ? (
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, textAlign: 'center' }}>
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="1.5" opacity=".35">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
-                    </svg>
-                    <span style={{ fontSize: 11, color: C.muted, lineHeight: 1.6 }}>{t.inspEmpty}</span>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+                    <span style={{ fontSize: 11, color: C.muted, textAlign: 'center' }}>{t.inspEmpty}</span>
                 </div>
             ) : (
-                <div style={{ padding: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: CROP_COLORS[field.crop], boxShadow: `0 0 6px ${CROP_COLORS[field.crop]}90`, flexShrink: 0 }} />
-                        <span style={{ fontWeight: 600, color: C.text }}>Field #{field.id}</span>
-                        <span style={{ marginInlineStart: 'auto', fontSize: 9, padding: '2px 9px', borderRadius: 10, background: `${CROP_COLORS[field.crop]}22`, border: `1px solid ${CROP_COLORS[field.crop]}55`, color: CROP_COLORS[field.crop], fontWeight: 600 }}>
-                            {t.cropNames[field.crop]}
+                <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: 3, background: CROP_COLORS[field.crop] || C.muted }} />
+                        <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>
+                            {lang === 'ar' ? t.cropNames[field.crop] : field.crop} #{field.id}
                         </span>
                     </div>
 
-                    {[
-                        [t.confLbl, `${field.conf}%`, field.conf, C.sky],
-                        [t.healthLbl, `${field.health}%`, field.health, field.health > 75 ? C.green : field.health > 55 ? C.amber : C.red],
-                        [t.stageLbl, field.stage !== undefined ? t.stages[field.stage] : '—', field.stage !== undefined ? (field.stage + 1) * 20 : 0, C.purple],
-                    ].map(([lb, vt, p, col]) => (
-                        <div key={String(lb)} style={{ marginBottom: 9 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                                <span style={{ fontSize: 10, color: C.muted }}>{lb}</span>
-                                <span style={{ fontSize: 10, fontWeight: 600, color: String(col) }}>{vt}</span>
-                            </div>
-                            <div style={{ height: 3, borderRadius: 2, background: C.border }}>
-                                <div style={{ height: '100%', borderRadius: 2, background: String(col), width: `${p}%`, transition: 'width .4s' }} />
-                            </div>
-                        </div>
-                    ))}
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, borderTop: `1px solid ${C.border}`, paddingTop: 10, marginBottom: 10 }}>
-                        {[
-                            [t.areaLbl, String(field.feddan)],
-                            [t.ndviLbl, field.ndvi.toFixed(2)],
-                            [t.yieldLbl, lang === 'en' ? field.yieldEn : field.yieldAr],
-                            [t.waterNeedLbl, lang === 'en' ? field.wEn : field.wAr],
-                        ].map(([lb, vt]) => (
-                            <div key={lb} style={{ background: C.card2, borderRadius: 5, padding: '7px 9px' }}>
-                                <div style={{ fontSize: 9, color: C.muted, marginBottom: 2 }}>{lb}</div>
-                                <div style={{ fontWeight: 600, fontSize: 11, color: C.sky }}>{vt}</div>
-                            </div>
-                        ))}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                        <Stat label={t.healthLbl} value={`${field.health}%`} color={C.green} />
+                        <Stat label={t.confLbl} value={`${field.conf}%`} color={C.sky} />
+                        <Stat label={t.areaLbl} value={`${field.feddan} fd`} color={C.amber} />
+                        <Stat label={t.ndviLbl} value={String(field.ndvi)} color={C.purple} />
+                        <Stat label={t.yieldLbl} value={lang === 'ar' ? field.yieldAr : field.yieldEn} color={C.green} />
+                        <Stat label={t.waterNeedLbl} value={lang === 'ar' ? field.wAr : field.wEn} color={C.sky} />
                     </div>
 
-                    <button onClick={onViewFullReport} style={{ width: '100%', padding: 6, background: 'rgba(14,165,233,.07)', border: '1px solid rgba(14,165,233,.22)', borderRadius: 5, color: C.sky, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    <div style={{ marginTop: 4, padding: '6px 10px', background: C.card2, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: 10, color: C.muted }}>{t.stageLbl}</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: C.text }}>
+                            {field.stage !== undefined ? t.stages[field.stage] : '—'}
+                        </span>
+                    </div>
+
+                    <button onClick={onViewFullReport} style={{ width: '100%', padding: 6, background: 'rgba(14,165,233,.07)', border: '1px solid rgba(14,165,233,.22)', borderRadius: 5, color: C.sky, fontSize: 11, cursor: 'pointer', fontFamily: 'inherit', marginTop: 'auto' }}>
                         {t.viewBtn}
                     </button>
                 </div>
             )}
+        </div>
+    );
+}
+
+function Stat({ label, value, color }: { label: string; value: string; color: string }) {
+    return (
+        <div style={{ background: C.card2, borderRadius: 6, padding: '5px 8px' }}>
+            <div style={{ fontSize: 9, color: C.muted, marginBottom: 2 }}>{label}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color }}>{value}</div>
         </div>
     );
 }

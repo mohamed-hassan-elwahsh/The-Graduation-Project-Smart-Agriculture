@@ -1,16 +1,20 @@
 export type Lang        = 'en' | 'ar';
 export type Phase       = 'search' | 'analyzing' | 'dashboard';
-export type LayerId     = 'agri' | 'crop' | 'veg' | 'water';
+export type LayerId     = 'image' | 'segmentation' | 'classification' | 'ndvi';
 export type Severity    = 'critical' | 'warning' | 'info';
 export type InsightType = 'error' | 'warning' | 'success' | 'info';
 export type CropType    = 'Rice' | 'Wheat' | 'Corn' | 'Other' | 'Water';
 
+export interface BBox {
+  top: number; left: number; height: number; width: number;
+}
+
 export interface Field {
   id: number;
-  polygon: [number, number][]; // Array of [lat, lng] tuples
+  bbox: BBox;
   crop: CropType;
   conf: number; health: number; feddan: number; ndvi: number; ndwi?: number;
-  stage?: number; // 0: Bare, 1: Emergence, 2: Vegetative, 3: Reproductive, 4: Maturity
+  stage?: number;
   yieldEn: string; yieldAr: string;
   wEn: string; wAr: string;
 }
@@ -34,7 +38,7 @@ export interface Alert {
 }
 
 export interface AnalysisData {
-  center: [number, number]; // [lat, lng]
+  center: [number, number];
   locEn: string; locAr: string;
   dateEn: string; dateAr: string;
   stats: number[];
@@ -44,6 +48,10 @@ export interface AnalysisData {
   waterTrend: WaterPoint[];
   insights: Insight[];
   alerts: Alert[];
+  imageBase64?: string;
+  segmentationBase64?: string;
+  classificationBase64?: string;
+  ndviBase64?: string;
 }
 
 export interface Translation {

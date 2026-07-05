@@ -15,14 +15,17 @@ import ExportModal from '@/features/dashboard/ExportModal';
 import FullReportModal from '@/features/dashboard/FullReportModal';
 
 interface Props {
-    t: Translation; lang: Lang; data: AnalysisData;
+    t: Translation;
+    lang: Lang;
+    data: AnalysisData;
     governorate?: string;
-    onLangToggle: () => void; onNew: () => void;
+    onLangToggle: () => void;
+    onNew: () => void;
 }
 
 export default function DashboardView({ t, lang, data, governorate, onLangToggle, onNew }: Props) {
     const [selectedField, setSelectedField] = useState<number | null>(null);
-    const [activeLayer, setActiveLayer] = useState<LayerId>('agri');
+    const [activeLayer, setActiveLayer] = useState<LayerId>('image');
     const [showExport, setShowExport] = useState(false);
     const [showFullReport, setShowFullReport] = useState(false);
 
@@ -38,7 +41,7 @@ export default function DashboardView({ t, lang, data, governorate, onLangToggle
                 <StatsRow t={t} stats={data.stats} />
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 9, minHeight: 270 }}>
-                    <MapWrapper t={t} center={data.center || [30.5877, 31.0127]} regions={data.regions} activeLayer={activeLayer} selectedField={selectedField} onLayerChange={setActiveLayer} onFieldSelect={setSelectedField} />
+                    <MapWrapper t={t} lang={lang} data={data} selectedField={selectedField} onFieldSelect={setSelectedField} activeLayer={activeLayer} onLayerChange={setActiveLayer} />
                     <FieldInspector t={t} lang={lang} field={field} onViewFullReport={() => setShowFullReport(true)} />
                 </div>
 
