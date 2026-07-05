@@ -14,12 +14,15 @@ export async function analyzeImage(file: File): Promise<AnalysisData> {
         });
 
         if (!res.ok) {
-            throw new Error(`API error: ${res.status}`);
+            const errText = await res.text().catch(() => 'Unknown error');
+            throw new Error(`Backend error ${res.status}: ${errText}`);
         }
 
         return await res.json();
-    } catch (e) {
-        console.error("Failed to analyze image, falling back to MOCK data:", e);
+    } catch (e: any) {
+        const errMsg = e?.message || String(e);
+        console.error('analyzeImage failed:', errMsg);
+        alert('Failed to connect to backend\n' + errMsg + '\n\nMake sure backend is running on http://localhost:8000');
         return new Promise(resolve => {
             setTimeout(() => resolve(generateAnalysisData(30.0, 31.0)), 2000);
         });
