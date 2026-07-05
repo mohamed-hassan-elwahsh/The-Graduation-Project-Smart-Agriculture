@@ -8,3 +8,10 @@ scipy
 pandas
 python-dotenv
 requests
+rasterio
+opencv-python
+segmentation-models-pytorch
+torch
+torchvision
+openai
+google-generativeai

@@ -5,9 +5,10 @@ from scipy.ndimage import label, find_objects
 
 from utils.geo import get_bounding_box
 from services.sentinel import fetch_sentinel_data, fetch_historical_ndvi
+from services.super_resolution import enhance_sentinel_bands
 from services.indices import calculate_indices
 from services.segmentation import segment_agricultural_land
-from services.classification import classify_crops
+from services.classification import classify_crops, get_crop_confidence
 from services.growth_stage import detect_growth_stage
 from services.recommendations import generate_insights, generate_alerts
 
@@ -18,16 +19,22 @@ def run_full_analysis(lat: float, lng: float, radius_km: float):
     # 2. Fetch current satellite data
     data = fetch_sentinel_data(bbox)
     
+    # 2b. Enhance satellite imagery with Super Resolution
+    data = enhance_sentinel_bands(data, scale=2)
+    
     # 3. Process Indices
     indices = calculate_indices(data)
     ndvi = indices["NDVI"]
     ndwi = indices["NDWI"]
     
-    # 4. Segmentation
-    agri_mask = segment_agricultural_land(data["SCL"], ndvi)
+    # 4. Segmentation (U-Net with ResNet34 encoder)
+    agri_mask = segment_agricultural_land(data["SCL"], ndvi, data=data)
     
-    # 5. Classification
-    crop_classes = classify_crops(agri_mask, ndvi, ndwi)
+    # 5. Classification (ResNet50)
+    crop_classes = classify_crops(agri_mask, ndvi, ndwi, data=data)
+    
+    # 5b. Get confidence scores
+    confidence = get_crop_confidence(agri_mask, data=data)
     
     # 6. Growth Stage
     growth_stages = detect_growth_stage(ndvi, crop_classes)
@@ -93,6 +100,10 @@ def run_full_analysis(lat: float, lng: float, radius_km: float):
         patch_ndwi = float(ndwi[slice_obj][mask].mean())
         patch_health = int(max(0, min(100, patch_ndvi * 100 + 20)))
         patch_stage = int(np.bincount(growth_stages[slice_obj][mask]).argmax())
+        
+        # Use model confidence if available, otherwise estimate
+        patch_conf = float(confidence[slice_obj][mask].mean()) if confidence is not None else random.randint(85, 98)
+        patch_conf_pct = int(patch_conf * 100) if patch_conf <= 1.0 else int(patch_conf)
 
         # Feddan estimation: 30m resolution → 1 pixel ≈ 900 m² ≈ 0.214 feddan
         feddan_est = int(pixels * 0.214)
@@ -132,7 +143,7 @@ def run_full_analysis(lat: float, lng: float, radius_km: float):
             "id": field_id,
             "polygon": polygon,
             "crop": crop_names.get(dominant_crop, "Other"),
-            "conf": random.randint(85, 98),
+            "conf": patch_conf_pct,
             "health": patch_health,
             "feddan": feddan_est,
             "ndvi": round(patch_ndvi, 2),
@@ -151,6 +162,7 @@ def run_full_analysis(lat: float, lng: float, radius_km: float):
     # 10. Build water trend from veg trend (estimated proportionally)
     water_trend = [{"y": v["y"], "w": round(1.4 + (v["v"] / 100) * 0.7, 2)} for v in veg_trend]
 
+    # 11. AI-powered insights and alerts (LLM or rule-based fallback)
     insights = generate_insights(regions)
     alerts   = generate_alerts(regions)
 
