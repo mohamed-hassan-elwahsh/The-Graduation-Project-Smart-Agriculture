@@ -1,65 +1,91 @@
 import { useState, useCallback } from 'react';
-import type { Phase, AnalysisData } from '@/core/types';
-import { analyzeRegion } from '@/core/api/api';
+import type { Phase, AnalysisData, Lang } from '@/core/types';
+import { analyzeRegion, analyzeImage } from '@/core/api/api';
 
-interface UseAnalysisReturn {
-  phase: Phase;
-  location: string;
-  governorate: string;
-  progress: number;
-  currentStep: number;
-  data: AnalysisData | null;
-  startAnalysis: (lat: number, lng: number, governorate?: string) => void;
-  resetAnalysis: () => void;
-}
-
-export function useAnalysis(): UseAnalysisReturn {
-  const [phase,       setPhase]       = useState<Phase>('search');
-  const [location,    setLocation]    = useState('');
+export function useAnalysis() {
+  const [phase, setPhase] = useState<Phase>('search');
+  const [location, setLocation] = useState('');
   const [governorate, setGovernorate] = useState('');
-  const [progress,    setProgress]    = useState(0);
+  const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-  const [data,        setData]        = useState<AnalysisData | null>(null);
+  const [data, setData] = useState<AnalysisData | null>(null);
 
-  const startAnalysis = useCallback(async (lat: number, lng: number, gov?: string) => {
-    setLocation(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-    setGovernorate(gov ?? '');
+  const startAnalysis = useCallback(async (lat: number, lng: number, radius?: number) => {
     setPhase('analyzing');
     setProgress(0);
     setCurrentStep(0);
-    setData(null);
 
-    // Fake progress for UX while API runs
-    let p = 0;
-    const tm = setInterval(() => {
-      p = Math.min(p + Math.random() * 1.5 + 0.5, 90);
-      setProgress(Math.round(p));
-      setCurrentStep(Math.min(Math.floor(p / (100 / 6)), 5));
-    }, 150);
+    // Simulate progress steps
+    const steps = [
+      { p: 15, s: 0 },
+      { p: 35, s: 1 },
+      { p: 55, s: 2 },
+      { p: 75, s: 3 },
+      { p: 90, s: 4 },
+    ];
+    steps.forEach(({ p, s }) => {
+      setTimeout(() => { setProgress(p); setCurrentStep(s); }, 400 * (s + 1));
+    });
 
     try {
-        const result = await analyzeRegion(lat, lng);
-        clearInterval(tm);
-        setProgress(100);
-        setCurrentStep(6);
-        setData(result);
-        setTimeout(() => setPhase('dashboard'), 600);
+      const result = await analyzeRegion(lat, lng, radius);
+      setData(result);
+      setProgress(100);
+      setTimeout(() => setPhase('dashboard'), 500);
     } catch (e) {
-        clearInterval(tm);
-        console.error("Analysis failed", e);
-        setPhase('search');
+      console.error('Analysis failed:', e);
+      setPhase('search');
+    }
+  }, []);
+
+  const startImageAnalysis = useCallback(async (file: File, lat?: number, lng?: number, radius?: number) => {
+    setPhase('analyzing');
+    setProgress(0);
+    setCurrentStep(0);
+
+    // Simulate progress steps
+    const steps = [
+      { p: 15, s: 0 },
+      { p: 35, s: 1 },
+      { p: 55, s: 2 },
+      { p: 75, s: 3 },
+      { p: 90, s: 4 },
+    ];
+    steps.forEach(({ p, s }) => {
+      setTimeout(() => { setProgress(p); setCurrentStep(s); }, 400 * (s + 1));
+    });
+
+    try {
+      const result = await analyzeImage(file, lat, lng, radius);
+      setData(result);
+      setProgress(100);
+      setTimeout(() => setPhase('dashboard'), 500);
+    } catch (e) {
+      console.error('Image analysis failed:', e);
+      setPhase('search');
     }
   }, []);
 
   const resetAnalysis = useCallback(() => {
     setPhase('search');
-    setLocation('');
-    setGovernorate('');
+    setData(null);
     setProgress(0);
     setCurrentStep(0);
-    setData(null);
+    setLocation('');
+    setGovernorate('');
   }, []);
 
-  return { phase, location, governorate, progress, currentStep, data, startAnalysis, resetAnalysis };
+  return {
+    phase,
+    location,
+    setLocation,
+    governorate,
+    setGovernorate,
+    progress,
+    currentStep,
+    data,
+    startAnalysis,
+    startImageAnalysis,
+    resetAnalysis,
+  };
 }
-
