@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { C } from '@/core/constants/constants';
 import type { Lang, Translation } from '@/core/types';
 
@@ -8,6 +8,7 @@ interface Props {
     lang: Lang;
     onLangToggle: () => void;
     onSearch: (lat: number, lng: number, governorate?: string) => void;
+    onImageUpload?: (file: File, lat?: number, lng?: number) => void;
 }
 
 const GOVERNORATES = [
@@ -40,10 +41,13 @@ const GOVERNORATES = [
     { nameAr: 'القليوبية',     nameEn: 'Qalyubia',        lat: 30.3292, lng: 31.2192 },
 ];
 
-export default function SearchView({ t, lang, onLangToggle, onSearch }: Props) {
+export default function SearchView({ t, lang, onLangToggle, onSearch, onImageUpload }: Props) {
     const [lat, setLat]   = useState('30.5877');
     const [lng, setLng]   = useState('31.0127');
     const [selected, setSelected] = useState('');
+    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const [dragOver, setDragOver] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleGovChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const val = e.target.value;
@@ -61,6 +65,32 @@ export default function SearchView({ t, lang, onLangToggle, onSearch }: Props) {
             const gov = GOVERNORATES.find(g => g.nameEn === selected);
             const govName = gov ? (lang === 'ar' ? gov.nameAr : gov.nameEn) : undefined;
             onSearch(_lat, _lng, govName);
+        }
+    };
+
+    const handleFileSelect = (file: File) => {
+        setUploadedFile(file);
+    };
+
+    const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            handleFileSelect(e.target.files[0]);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setDragOver(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFileSelect(e.dataTransfer.files[0]);
+        }
+    };
+
+    const handleUploadAnalyze = () => {
+        if (uploadedFile && onImageUpload) {
+            const _lat = parseFloat(lat);
+            const _lng = parseFloat(lng);
+            onImageUpload(uploadedFile, isNaN(_lat) ? undefined : _lat, isNaN(_lng) ? undefined : _lng);
         }
     };
 
@@ -89,6 +119,90 @@ export default function SearchView({ t, lang, onLangToggle, onSearch }: Props) {
             </div>
 
             <div style={{ width: '100%', maxWidth: 480 }}>
+                {/* Image Upload Zone */}
+                <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                        marginBottom: 14,
+                        border: `2px dashed ${dragOver ? C.sky : C.border}`,
+                        borderRadius: 10,
+                        padding: uploadedFile ? '16px' : '28px 20px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        background: dragOver ? 'rgba(14,165,233,.06)' : C.card,
+                        transition: 'all .2s',
+                    }}
+                >
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/tiff,.tif,.tiff"
+                        onChange={handleFileInput}
+                        style={{ display: 'none' }}
+                    />
+                    {uploadedFile ? (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={C.sky} strokeWidth="2" strokeLinecap="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                            </svg>
+                            <span style={{ fontSize: 13, color: C.text, fontWeight: 600 }}>{uploadedFile.name}</span>
+                            <span style={{ fontSize: 11, color: C.muted }}>({(uploadedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setUploadedFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: C.muted, fontSize: 16, padding: '0 4px', fontFamily: 'inherit' }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    ) : (
+                        <div>
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="1.5" strokeLinecap="round" style={{ margin: '0 auto 10px' }}>
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                            </svg>
+                            <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 4 }}>
+                                {lang === 'ar' ? 'ارفع صورة قمر صناعي' : 'Upload Satellite Image'}
+                            </div>
+                            <div style={{ fontSize: 11, color: C.muted }}>
+                                {lang === 'ar' ? 'اسحب الصورة هنا أو اضغط للاختيار (JPG, PNG, TIFF)' : 'Drag & drop or click to browse (JPG, PNG, TIFF)'}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Upload Analyze Button */}
+                {uploadedFile && (
+                    <button
+                        onClick={handleUploadAnalyze}
+                        style={{
+                            width: '100%',
+                            background: C.sky,
+                            border: 'none',
+                            borderRadius: 7,
+                            padding: '12px 20px',
+                            cursor: 'pointer',
+                            color: '#fff',
+                            fontSize: 14,
+                            fontWeight: 700,
+                            marginBottom: 14,
+                            fontFamily: 'inherit',
+                        }}
+                    >
+                        {lang === 'ar' ? 'تحليل الصورة المرفوعة 🛰️' : 'Analyze Uploaded Image 🛰️'}
+                    </button>
+                )}
+
+                {/* Divider */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+                    <div style={{ flex: 1, height: 1, background: C.border }} />
+                    <span style={{ fontSize: 11, color: C.dim, fontWeight: 600 }}>
+                        {lang === 'ar' ? 'أو أدخل الإحداثيات' : 'OR ENTER COORDINATES'}
+                    </span>
+                    <div style={{ flex: 1, height: 1, background: C.border }} />
+                </div>
+
                 {/* Governorate Dropdown */}
                 <div style={{ marginBottom: 10 }}>
                     <select
