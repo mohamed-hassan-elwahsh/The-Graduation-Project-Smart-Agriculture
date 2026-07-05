@@ -1,7 +1,7 @@
 import type { AnalysisData } from '@/core/types';
 import { generateAnalysisData } from '@/data/mockAnalysis';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3000';
 
 export async function analyzeImage(file: File): Promise<AnalysisData> {
     try {
